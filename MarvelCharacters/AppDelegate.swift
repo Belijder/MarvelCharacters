@@ -14,6 +14,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        let attrs = [
+            NSAttributedString.Key.foregroundColor: MCColors.marvelRed,
+            NSAttributedString.Key.font: UIFont(name: "BentonSansExtraComp-Black", size: 24)!
+        ]
+        
+        let attrsLarg = [
+            NSAttributedString.Key.foregroundColor: UIColor.white,
+            NSAttributedString.Key.font: UIFont(name: "BentonSansExtraComp-Black", size: 48)!
+        ]
+        
+        UINavigationBar.appearance().titleTextAttributes = attrs
+        UINavigationBar.appearance().largeTitleTextAttributes = attrsLarg
+        
         return true
     }
 
