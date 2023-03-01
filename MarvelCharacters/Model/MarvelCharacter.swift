@@ -31,7 +31,7 @@ struct CharacterDataWrapper: Codable {
 }
 
 
-struct MarvelCharacter: Codable {
+struct MarvelCharacter: Codable, Hashable {
     let id: Int
     let name: String
     let description: String?
@@ -46,7 +46,7 @@ struct MarvelCharacter: Codable {
 }
 
 
-struct Thumbnail: Codable {
+struct Thumbnail: Codable, Hashable {
     let path: String
     let `extension`: String
     
@@ -57,7 +57,7 @@ struct Thumbnail: Codable {
 }
 
 
-struct ComicList: Codable {
+struct ComicList: Codable, Hashable {
     let available: Int
     let collectionURI: String
     let items: [ComicSummary]
@@ -69,7 +69,7 @@ struct ComicList: Codable {
 }
 
 
-struct ComicSummary: Codable {
+struct ComicSummary: Codable, Hashable {
     let resourceURI: String
     let name: String
     
@@ -79,7 +79,7 @@ struct ComicSummary: Codable {
 }
 
 
-struct SeriesList: Codable {
+struct SeriesList: Codable, Hashable {
     let available: Int
     let collectionURI: String
     let items: [SeriesSummary]
@@ -91,7 +91,7 @@ struct SeriesList: Codable {
 }
 
 
-struct SeriesSummary: Codable {
+struct SeriesSummary: Codable, Hashable {
     let resourceURI: String
     let name: String
     
@@ -101,7 +101,7 @@ struct SeriesSummary: Codable {
 }
 
 
-struct StoryList: Codable {
+struct StoryList: Codable, Hashable {
     let available: Int
     let collectionURI: String
     let items: [StorySummary]
@@ -113,7 +113,7 @@ struct StoryList: Codable {
 }
 
 
-struct StorySummary: Codable {
+struct StorySummary: Codable, Hashable {
     let resourceURI: String
     let name: String?
     let type: String?

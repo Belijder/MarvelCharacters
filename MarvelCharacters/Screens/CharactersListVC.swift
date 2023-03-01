@@ -11,53 +11,57 @@ import CommonCrypto
 
 class CharactersListVC: UIViewController {
     
+    enum Section {
+        case main
+    }
+    
     var characters = [MarvelCharacter]()
+    var queryCharacters = [MarvelCharacter]()
+    
     var charactersTableView = UITableView()
+    var dataSource: UITableViewDiffableDataSource<Section, MarvelCharacter>!
+    let searchController = UISearchController()
+    
     let spinningCircleView = SpinningCircleView()
     var tableViewTopConstraint: Constraint? = nil
     
     var isLoadingMoreCharacters = false
+    var isSearching = false
+    
     
     // MARK: - Live cicle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureVC()
-        configureSearchController()
         setupTableView()
         layoutUI()
         fetchCharacters()
+        configureSearchController()
+        configureDataSource()
     }
 
   
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        setGradientBackground(colorTop: MCColors.marvelRed, colorBottom: MCColors.marvelDarkRed)
+        view.setGradientBackground(colorTop: MCColors.marvelRed, colorBottom: MCColors.marvelDarkRed)
         
     }
     
 
     // MARK: - Set up
-    private func setGradientBackground(colorTop: UIColor, colorBottom: UIColor) {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [colorBottom.cgColor, colorTop.cgColor]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 1.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.locations = [0, 1]
-        gradientLayer.frame = view.bounds
-
-        view.layer.insertSublayer(gradientLayer, at: 0)
-    }
-    
     private func configureVC() {
         navigationController?.navigationBar.prefersLargeTitles = true
         title = "MARVEL CHARACTERS"
         navigationController?.navigationBar.tintColor = .white
     }
     
+    
     private func configureSearchController() {
-        let searchController = UISearchController()
         searchController.searchResultsUpdater = self
+        searchController.searchBar.returnKeyType = .done
         searchController.searchBar.tintColor = MCColors.marvelGoldenrod
+        searchController.searchBar.searchTextField.backgroundColor = MCColors.marvelGoldenrod
+        searchController.searchBar.searchTextField.tintColor = MCColors.marvelRed
         searchController.searchBar.placeholder = "Search for a character"
         navigationItem.searchController = searchController
     }
@@ -74,9 +78,18 @@ class CharactersListVC: UIViewController {
     
     private func setupTableView() {
         charactersTableView.delegate = self
-        charactersTableView.dataSource = self
         charactersTableView.backgroundColor = .clear
+        charactersTableView.separatorStyle = .none
         charactersTableView.register(MCCharacterCell.self, forCellReuseIdentifier: MCCharacterCell.identifier)
+    }
+    
+    
+    private func configureDataSource() {
+        dataSource = UITableViewDiffableDataSource(tableView: charactersTableView, cellProvider: { tableView, indexPath, character in
+            let cell = self.charactersTableView.dequeueReusableCell(withIdentifier: MCCharacterCell.identifier) as! MCCharacterCell
+            cell.set(from: character)
+            return cell
+        })
     }
     
     
@@ -89,14 +102,14 @@ class CharactersListVC: UIViewController {
             switch result {
             case .success(let characters):
                 self.characters.append(contentsOf: characters)
-                self.charactersTableView.reloadData()
+                self.updateData(on: self.characters)
             case .failure(let error):
                 print("🔴 Error: \(error)")
             }
             self.isLoadingMoreCharacters = false
-            self.spinningCircleView.removeFromSuperview()
+            self.hideSpinningCircleView()
             
-            if self.characters.count < 101 {
+            if self.characters.count < 31 {
                 self.slideInTableView()
             }
         }
@@ -108,18 +121,31 @@ class CharactersListVC: UIViewController {
             self.tableViewTopConstraint?.update(offset: 0)
             self.view.layoutIfNeeded()
         })
-        
     }
+    
     
     private func showSpinningCircleView() {
         spinningCircleView.frame = CGRect(x: (ScreenSize.width / 2) - 15, y: (ScreenSize.height / 2) - 15, width: 30, height: 30)
         view.addSubview(spinningCircleView)
     }
+    
+    private func hideSpinningCircleView() {
+        self.spinningCircleView.removeFromSuperview()
+    }
+    
+    func updateData(on characters: [MarvelCharacter]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, MarvelCharacter>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(characters)
+        DispatchQueue.main.async {
+            self.dataSource.apply(snapshot, animatingDifferences: false)
+        }
+    }
 }
 
 
 // MARK: - TableView Extensions
-extension CharactersListVC: UITableViewDelegate, UITableViewDataSource {
+extension CharactersListVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return characters.count
     }
@@ -135,19 +161,18 @@ extension CharactersListVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if let cell = tableView.dequeueReusableCell(withIdentifier: MCCharacterCell.identifier, for: indexPath) as? MCCharacterCell {
-            cell.set(from: characters[indexPath.row])
-            return cell
-        } else {
-            return UITableViewCell(frame: .zero)
-        }
-       
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.backgroundColor  = .clear
     }
     
     
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.backgroundColor  = .clear
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        searchController.searchBar.resignFirstResponder()
+        tableView.deselectRow(at: indexPath, animated: true)
+        let character = isSearching ? queryCharacters[indexPath.row] : characters[indexPath.row]
+        let destVC = CharacterDetailsVC(character: character)
+        destVC.modalPresentationStyle = .fullScreen
+        self.navigationController?.pushViewController(destVC, animated: true)
     }
     
     
@@ -157,7 +182,7 @@ extension CharactersListVC: UITableViewDelegate, UITableViewDataSource {
         let height = scrollView.frame.height
         
         if offsetY > contentHeight - height {
-            guard !isLoadingMoreCharacters else { return }
+            guard !isSearching && !isLoadingMoreCharacters else { return }
             fetchCharacters(offset: characters.count)
         }
     }
@@ -168,8 +193,28 @@ extension CharactersListVC: UITableViewDelegate, UITableViewDataSource {
 // MARK: - SearchResultsUpdating Extension
 extension CharactersListVC: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
+        guard let filter = searchController.searchBar.text, !filter.isEmpty else {
+            queryCharacters.removeAll()
+            updateData(on: characters)
+            isSearching = false
+            return
+        }
         
+        let lowercased = filter.lowercased()
+        let query = lowercased.replacingOccurrences(of: " ", with: "_")
+        
+        isSearching = true
+        self.showSpinningCircleView()
+        
+        NetworkingManager.shared.fetchCharactersWith(query: query) { result in
+            switch result {
+            case .success(let characters):
+                self.queryCharacters = characters
+                self.updateData(on: characters)
+            case .failure(let error):
+                print("🔴 Error: \(error)")
+            }
+            self.hideSpinningCircleView()
+        }
     }
-    
-    
 }

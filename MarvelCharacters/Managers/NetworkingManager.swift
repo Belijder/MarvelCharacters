@@ -39,6 +39,21 @@ class NetworkingManager {
     }
     
     
+    func fetchCharactersWith(query: String, completion: @escaping (Result<[MarvelCharacter], Error>) -> Void) {
+        let hash = MD5(string: "\(ts)\(apiKeyPrivate)\(apiKeyPublic)")
+        let url = "\(baseURL)nameStartsWith=\(query)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
+        
+        AF.request(url).responseDecodable(of: APIResponse.self) { response in
+            switch response.result {
+            case .success(let results):
+                completion(.success(results.data.results))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    
     func fetchImage(baseURL: String, ext: String, completion: @escaping (Result<UIImage, MCError>) -> Void) {
         guard baseURL != ImageNotAvailable.url else {
             if let image = MCImages.imageNotFoundPlaceholder {

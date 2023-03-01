@@ -49,6 +49,10 @@ class MCCharacterCell: UITableViewCell {
     
     //MARK: - Set up
     private func configure() {
+        let selectedBV = UIView()
+        selectedBV.backgroundColor = MCColors.marvelGoldenrod
+        self.selectedBackgroundView = selectedBV
+       
         contentView.addSubviews(uBGView, bgView)
         bgView.addSubviews(thumbnailImage, nameLabel, descriptionLabel, knowFromLabel, seriesOneTitle, seriesTwoTitle, seriesThreeTitle)
         
