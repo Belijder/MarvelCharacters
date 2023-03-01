@@ -24,9 +24,9 @@ class NetworkingManager {
     let baseURL = Setup.baseURL
     
     
-    func fetchCharacters(completion: @escaping (Result<[MarvelCharacter], Error>) -> Void) {
+    func fetchCharacters(offset: Int = 0, completion: @escaping (Result<[MarvelCharacter], Error>) -> Void) {
         let hash = MD5(string: "\(ts)\(apiKeyPrivate)\(apiKeyPublic)")
-        let url = "\(baseURL)limit=\(20)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
+        let url = "\(baseURL)limit=\(30)&offset=\(offset)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
         
         AF.request(url).responseDecodable(of: APIResponse.self) { response in
             switch response.result {

@@ -13,14 +13,16 @@ class CharactersListVC: UIViewController {
     
     var characters = [MarvelCharacter]()
     var charactersTableView = UITableView()
-
+    let spinningCircleView = SpinningCircleView()
+    var tableViewTopConstraint: Constraint? = nil
+    
+    var isLoadingMoreCharacters = false
     
     // MARK: - Live cicle
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.navigationBar.prefersLargeTitles = true
-        title = "MARVEL CHARACTERS"
-       
+        configureVC()
+        configureSearchController()
         setupTableView()
         layoutUI()
         fetchCharacters()
@@ -46,11 +48,26 @@ class CharactersListVC: UIViewController {
         view.layer.insertSublayer(gradientLayer, at: 0)
     }
     
+    private func configureVC() {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        title = "MARVEL CHARACTERS"
+        navigationController?.navigationBar.tintColor = .white
+    }
+    
+    private func configureSearchController() {
+        let searchController = UISearchController()
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.tintColor = MCColors.marvelGoldenrod
+        searchController.searchBar.placeholder = "Search for a character"
+        navigationItem.searchController = searchController
+    }
+    
     
     private func layoutUI() {
         view.addSubview(charactersTableView)
         charactersTableView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            self.tableViewTopConstraint = make.top.equalTo(self.view.layoutMarginsGuide).offset(ScreenSize.height - 400).constraint
+            make.left.right.bottom.equalToSuperview()
         }
     }
     
@@ -64,21 +81,44 @@ class CharactersListVC: UIViewController {
     
     
     // MARK: - Actions
-    func fetchCharacters() {
-        NetworkingManager.shared.fetchCharacters { result in
+    private func fetchCharacters(offset: Int = 0) {
+        showSpinningCircleView()
+        isLoadingMoreCharacters = true
+        
+        NetworkingManager.shared.fetchCharacters(offset: offset) { result in
             switch result {
             case .success(let characters):
-                self.characters = characters
+                self.characters.append(contentsOf: characters)
                 self.charactersTableView.reloadData()
             case .failure(let error):
                 print("🔴 Error: \(error)")
             }
+            self.isLoadingMoreCharacters = false
+            self.spinningCircleView.removeFromSuperview()
+            
+            if self.characters.count < 101 {
+                self.slideInTableView()
+            }
         }
+    }
+    
+    // MARK: - Logic
+    func slideInTableView() {
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseIn, animations: {
+            self.tableViewTopConstraint?.update(offset: 0)
+            self.view.layoutIfNeeded()
+        })
+        
+    }
+    
+    private func showSpinningCircleView() {
+        spinningCircleView.frame = CGRect(x: (ScreenSize.width / 2) - 15, y: (ScreenSize.height / 2) - 15, width: 30, height: 30)
+        view.addSubview(spinningCircleView)
     }
 }
 
 
-// MARK: - Extensions
+// MARK: - TableView Extensions
 extension CharactersListVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return characters.count
@@ -110,5 +150,26 @@ extension CharactersListVC: UITableViewDelegate, UITableViewDataSource {
         cell.backgroundColor  = .clear
     }
     
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let height = scrollView.frame.height
+        
+        if offsetY > contentHeight - height {
+            guard !isLoadingMoreCharacters else { return }
+            fetchCharacters(offset: characters.count)
+        }
+    }
+    
+    
 }
 
+// MARK: - SearchResultsUpdating Extension
+extension CharactersListVC: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        
+    }
+    
+    
+}
