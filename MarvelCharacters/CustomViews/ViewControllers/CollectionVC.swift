@@ -7,20 +7,6 @@
 
 import UIKit
 
-protocol CollectionItem: Hashable {
-    var id: Int { get }
-    var thumbnail: MCImage { get }
-    var title: String { get }
-    var description: String? { get }
-    var resourceURI: String { get }
-    var creators: CreatorList { get }
-}
-
-protocol CanFetchItemsProtocol {
-    func fetchItems()
-}
-
-
 class CollectionVC: MCDataLoadingVC {
     
    // MARK: - Properties
@@ -29,7 +15,7 @@ class CollectionVC: MCDataLoadingVC {
     
     let emptyCollectionLabel = MCBodyLabel(textAlignment: .center, fontSize: 15)
     
-    var items: [any CollectionItem] = []
+    var items: [MCCollectionItem] = []
     var collectionURI: String
 
     override func viewDidLoad() {
@@ -37,12 +23,13 @@ class CollectionVC: MCDataLoadingVC {
         configureCollectionView()
         layoutUI()
         configureEmptyCollectionLabel()
+        fetchItems()
     }
     
     // MARK: - Initialization
-    init(collectionURI: String, collectionName: String) {
+    init(collectionURI: String, collectionType: CollectionType) {
         self.collectionURI = collectionURI
-        self.titleLabel.text = collectionName
+        self.titleLabel.text = collectionType.rawValue
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -90,8 +77,32 @@ class CollectionVC: MCDataLoadingVC {
         
         emptyCollectionLabel.snp.makeConstraints { make in
             make.centerX.centerY.equalToSuperview()
-            make.left.right.equalToSuperview().inset(20)
             make.height.equalTo(20)
+        }
+    }
+    
+    // MARK: - Logic
+    func fetchItems() {
+        showSpinningCircleView(in: collectionView, frame: CGRect(x: (ScreenSize.width / 2) - 15, y: 100, width: 30, height: 30))
+        
+        var secureURL = collectionURI
+        secureURL.insert("s", at: secureURL.index(secureURL.startIndex, offsetBy: 4))
+        
+        NetworkingManager.shared.fetchItems(type: ApiResponse.self, baseURL: secureURL) { [weak self] result in
+            switch result {
+            case .success(let response):
+                if response.data.count > 0 {
+                    self?.items = response.data.results
+                    self?.collectionView.reloadData()
+                } else {
+                    print(response.data.count)
+                    self?.emptyCollectionLabel.alpha = 1.0
+                }
+            case .failure(let error):
+                print("🔴 Error to fetch collections from URI: \(String(describing: self?.collectionURI)). Error: \(error)")
+            }
+            
+            self?.hideSpinningCircleView()
         }
     }
 }
@@ -108,4 +119,11 @@ extension CollectionVC: UICollectionViewDelegate, UICollectionViewDataSource {
         cell.set(from: items[indexPath.row])
         return cell
     }
+}
+
+
+enum CollectionType: String {
+    case series = "Series"
+    case comics = "Comics"
+    case events = "Events"
 }

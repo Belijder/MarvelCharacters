@@ -7,25 +7,27 @@
 
 import Foundation
 
-struct SeriesDataResponse: Decodable, Hashable {
+struct ApiResponse: Decodable, Hashable {
     let copyright: String
-    let data: SeriesData
+    let data: DataResponse
 
     enum CodingKeys: String, CodingKey {
         case copyright, data
     }
 }
 
-struct SeriesData: Decodable, Hashable {
+
+struct DataResponse: Decodable, Hashable {
     let count: Int
-    let results: [Series]
+    let results: [MCCollectionItem]
     
     enum CodingKeys: String, CodingKey {
         case count, results
     }
 }
 
-struct Series: Decodable, Hashable, CollectionItem {
+
+struct MCCollectionItem: Decodable, Hashable {
     let id: Int
     let title: String
     let description: String?

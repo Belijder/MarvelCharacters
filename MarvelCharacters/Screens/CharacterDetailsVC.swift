@@ -127,9 +127,9 @@ class CharacterDetailsVC: UIViewController {
     }
     
     private func setupCollections() {
-        add(childVC: SeriesCollectionVC(collectionURI: character.series.collectionURI, collectionName: "Series"), to: seriesCollectionsContainer)
-        add(childVC: ComicsCollectionVC(collectionURI: character.comics.collectionURI, collectionName: "Comics"), to: comicsCollectionsContainer)
-        add(childVC: EventsCollectionVC(collectionURI: character.events.collectionURI, collectionName: "Events"), to: eventsCollectionsContainer)
+        add(childVC: CollectionVC(collectionURI: character.series.collectionURI, collectionType: .series), to: seriesCollectionsContainer)
+        add(childVC: CollectionVC(collectionURI: character.comics.collectionURI, collectionType: .comics), to: comicsCollectionsContainer)
+        add(childVC: CollectionVC(collectionURI: character.events.collectionURI, collectionType: .events), to: eventsCollectionsContainer)
     }
     
     //MARK: -  Logic

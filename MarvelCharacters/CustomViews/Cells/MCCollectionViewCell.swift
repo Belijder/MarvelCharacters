@@ -55,8 +55,8 @@ class MCCollectionViewCell: UICollectionViewCell {
     }
     
     
-    func set(from item: any CollectionItem) {
-        NetworkingManager.shared.fetchImage(baseURL: item.thumbnail.path, ext: item.thumbnail.extension) { [ weak self ] result in
+    func set(from item: MCCollectionItem) {
+        NetworkingManager.shared.fetchImage(baseURL: item.thumbnail.path, ext: item.thumbnail.extension) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let image ):
