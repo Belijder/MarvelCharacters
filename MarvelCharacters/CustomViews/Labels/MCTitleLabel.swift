@@ -20,7 +20,7 @@ class MCTitleLabel: UILabel {
     }
     
     convenience init(textAlignment: NSTextAlignment, fontSize: CGFloat, color: UIColor) {
-        self.init(frame: .zero)
+        self.init(frame: CGRect(x: 0, y: 0, width: ScreenSize.width, height: .greatestFiniteMagnitude))
         self.textAlignment = textAlignment
         self.font = UIFont(name: "BentonSansExtraComp-Black", size: fontSize)
         self.textColor = color  

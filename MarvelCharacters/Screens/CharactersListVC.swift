@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import CommonCrypto
 
-class CharactersListVC: UIViewController {
+class CharactersListVC: MCDataLoadingVC {
     
     enum Section {
         case main
@@ -22,7 +22,6 @@ class CharactersListVC: UIViewController {
     var dataSource: UITableViewDiffableDataSource<Section, MarvelCharacter>!
     let searchController = UISearchController()
     
-    let spinningCircleView = SpinningCircleView()
     var tableViewTopConstraint: Constraint? = nil
     
     var isLoadingMoreCharacters = false
@@ -95,17 +94,23 @@ class CharactersListVC: UIViewController {
     
     // MARK: - Actions
     private func fetchCharacters(offset: Int = 0) {
-        showSpinningCircleView()
+        showSpinningCircleView(in: view, frame: CGRect(x: (ScreenSize.width / 2) - 15, y: (ScreenSize.height / 2) - 15, width: 30, height: 30))
         isLoadingMoreCharacters = true
         
-        NetworkingManager.shared.fetchCharacters(offset: offset) { result in
+        NetworkingManager.shared.fetchItems(type: CharactersDataResponse.self, baseURL: NetworkingManager.shared.charactersBaseURL, offset: offset) { result in
             switch result {
-            case .success(let characters):
+            case .success(let response):
+                let characters = response.data.results
                 self.characters.append(contentsOf: characters)
                 self.updateData(on: self.characters)
+                
+                let comicsCollectionURI = characters[0].comics.collectionURI
+                print("🔵 comicsCollectionURI: \(comicsCollectionURI)")
+                
             case .failure(let error):
                 print("🔴 Error: \(error)")
             }
+            
             self.isLoadingMoreCharacters = false
             self.hideSpinningCircleView()
             
@@ -115,6 +120,7 @@ class CharactersListVC: UIViewController {
         }
     }
     
+    
     // MARK: - Logic
     func slideInTableView() {
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseIn, animations: {
@@ -123,15 +129,6 @@ class CharactersListVC: UIViewController {
         })
     }
     
-    
-    private func showSpinningCircleView() {
-        spinningCircleView.frame = CGRect(x: (ScreenSize.width / 2) - 15, y: (ScreenSize.height / 2) - 15, width: 30, height: 30)
-        view.addSubview(spinningCircleView)
-    }
-    
-    private func hideSpinningCircleView() {
-        self.spinningCircleView.removeFromSuperview()
-    }
     
     func updateData(on characters: [MarvelCharacter]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, MarvelCharacter>()
@@ -170,7 +167,11 @@ extension CharactersListVC: UITableViewDelegate {
         searchController.searchBar.resignFirstResponder()
         tableView.deselectRow(at: indexPath, animated: true)
         let character = isSearching ? queryCharacters[indexPath.row] : characters[indexPath.row]
-        let destVC = CharacterDetailsVC(character: character)
+        
+        let characterCell = charactersTableView.cellForRow(at: indexPath) as! MCCharacterCell
+        guard let image = characterCell.thumbnailImage.image else { return }
+        
+        let destVC = CharacterDetailsVC(character: character, characterImage: image)
         destVC.modalPresentationStyle = .fullScreen
         self.navigationController?.pushViewController(destVC, animated: true)
     }
@@ -204,7 +205,7 @@ extension CharactersListVC: UISearchResultsUpdating {
         let query = lowercased.replacingOccurrences(of: " ", with: "_")
         
         isSearching = true
-        self.showSpinningCircleView()
+        self.showSpinningCircleView(in: view, frame: CGRect(x: (ScreenSize.width / 2) - 15, y: (ScreenSize.height / 2) - 15, width: 30, height: 30))
         
         NetworkingManager.shared.fetchCharactersWith(query: query) { result in
             switch result {

@@ -7,18 +7,15 @@
 
 import Foundation
 
-struct APIResponse: Codable {
-    let code: Int
-    let status: String
-    let data: CharacterDataWrapper
+struct CharactersDataResponse: Decodable {
+    let data: CharacterData
     
     enum CodingKeys: String, CodingKey {
-        case code, status, data
+        case data
     }
 }
 
-
-struct CharacterDataWrapper: Codable {
+struct CharacterData: Decodable {
     let offset: Int
     let limit: Int
     let total: Int
@@ -30,95 +27,48 @@ struct CharacterDataWrapper: Codable {
     }
 }
 
-
-struct MarvelCharacter: Codable, Hashable {
+struct MarvelCharacter: Decodable, Hashable {
     let id: Int
     let name: String
     let description: String?
-    let thumbnail: Thumbnail
+    let thumbnail: MCImage
     let comics: ComicList
     let series: SeriesList
     let stories: StoryList
+    let events: EventList
     
     enum CodingKeys: String, CodingKey {
-        case id, name, description, thumbnail, comics, series, stories
+        case id, name, description, thumbnail, comics, series, stories, events
     }
 }
 
-
-struct Thumbnail: Codable, Hashable {
-    let path: String
-    let `extension`: String
-    
-    enum CodingKeys: String, CodingKey {
-        case path
-        case `extension` = "extension"
-    }
-}
-
-
-struct ComicList: Codable, Hashable {
-    let available: Int
+struct ComicList: Decodable, Hashable {
     let collectionURI: String
-    let items: [ComicSummary]
-    let returned: Int
-    
-    enum CodingKeys: String, CodingKey {
-        case available, collectionURI, items, returned
-    }
 }
 
-
-struct ComicSummary: Codable, Hashable {
+struct ComicSummary: Decodable, Hashable {
     let resourceURI: String
     let name: String
-    
-    enum CodingKeys: String, CodingKey {
-        case resourceURI, name
-    }
 }
 
-
-struct SeriesList: Codable, Hashable {
-    let available: Int
+struct SeriesList: Decodable, Hashable {
     let collectionURI: String
     let items: [SeriesSummary]
-    let returned: Int
     
     enum CodingKeys: String, CodingKey {
-        case available, collectionURI, items, returned
+        case collectionURI, items
     }
 }
 
-
-struct SeriesSummary: Codable, Hashable {
+struct SeriesSummary: Decodable, Hashable {
     let resourceURI: String
     let name: String
-    
-    enum CodingKeys: String, CodingKey {
-        case resourceURI, name
-    }
 }
 
-
-struct StoryList: Codable, Hashable {
-    let available: Int
+struct StoryList: Decodable, Hashable {
     let collectionURI: String
-    let items: [StorySummary]
-    let returned: Int
-    
-    enum CodingKeys: String, CodingKey {
-        case available, collectionURI, items, returned
-    }
 }
 
-
-struct StorySummary: Codable, Hashable {
-    let resourceURI: String
-    let name: String?
-    let type: String?
-    
-    enum CodingKeys: String, CodingKey {
-        case resourceURI, name, type
-    }
+struct EventList: Decodable, Hashable {
+    let collectionURI: String
 }

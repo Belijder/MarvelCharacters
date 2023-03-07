@@ -11,7 +11,7 @@ enum Setup {
     static let kAPIPrivateKey = "APIPrivateKey"
     static let kAPIPublicKey = "APIPublicKey"
     
-    static let baseURL = "https://gateway.marvel.com/v1/public/characters?"
+    static let baseURL = "https://gateway.marvel.com/v1/public/characters"
 }
 
 

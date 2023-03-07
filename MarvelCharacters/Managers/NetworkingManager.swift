@@ -10,6 +10,12 @@ import Alamofire
 import CryptoKit
 
 class NetworkingManager {
+    
+    enum DataResposneType {
+        static let characters = CharactersDataResponse.self
+        static let comics = ComicDataResponse.self
+    }
+    
     static let shared = NetworkingManager()
     
     private init() {
@@ -21,17 +27,32 @@ class NetworkingManager {
     let apiKeyPrivate: String
     let ts = String(Date().timeIntervalSince1970)
     
-    let baseURL = Setup.baseURL
+    let charactersBaseURL = Setup.baseURL
     
     
-    func fetchCharacters(offset: Int = 0, completion: @escaping (Result<[MarvelCharacter], Error>) -> Void) {
+//    func fetchCharacters(offset: Int = 0, completion: @escaping (Result<[MarvelCharacter], Error>) -> Void) {
+//        let hash = MD5(string: "\(ts)\(apiKeyPrivate)\(apiKeyPublic)")
+//        let url = "\(baseURL)limit=\(30)&offset=\(offset)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
+//        
+//        AF.request(url).responseDecodable(of: CharactersDataResponse.self) { response in
+//            switch response.result {
+//            case .success(let results):
+//                completion(.success(results.data.results))
+//            case .failure(let error):
+//                completion(.failure(error))
+//            }
+//        }
+//    }
+    
+    
+    func fetchItems<T: Decodable>(type: T.Type, baseURL: String, offset: Int = 0, completion: @escaping (Result<T, Error>) -> Void) {
         let hash = MD5(string: "\(ts)\(apiKeyPrivate)\(apiKeyPublic)")
-        let url = "\(baseURL)limit=\(30)&offset=\(offset)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
+        let url = "\(baseURL)?limit=\(30)&offset=\(offset)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
         
-        AF.request(url).responseDecodable(of: APIResponse.self) { response in
+        AF.request(url).responseDecodable(of: T.self) { response in
             switch response.result {
             case .success(let results):
-                completion(.success(results.data.results))
+                completion(.success(results))
             case .failure(let error):
                 completion(.failure(error))
             }
@@ -41,9 +62,9 @@ class NetworkingManager {
     
     func fetchCharactersWith(query: String, completion: @escaping (Result<[MarvelCharacter], Error>) -> Void) {
         let hash = MD5(string: "\(ts)\(apiKeyPrivate)\(apiKeyPublic)")
-        let url = "\(baseURL)nameStartsWith=\(query)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
+        let url = "\(charactersBaseURL)?nameStartsWith=\(query)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
         
-        AF.request(url).responseDecodable(of: APIResponse.self) { response in
+        AF.request(url).responseDecodable(of: CharactersDataResponse.self) { response in
             switch response.result {
             case .success(let results):
                 completion(.success(results.data.results))

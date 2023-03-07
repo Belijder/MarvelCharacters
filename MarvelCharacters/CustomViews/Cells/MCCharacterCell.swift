@@ -33,17 +33,17 @@ class MCCharacterCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        thumbnailImage.contentMode = .scaleAspectFill
-        thumbnailImage.roundCorners(corners: [.topLeft, .bottomLeft], radius: 20)
-    }
-    
     
     // MARK: - Live cicle
     override func prepareForReuse() {
         super.prepareForReuse()
         thumbnailImage.image = nil
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        thumbnailImage.contentMode = .scaleAspectFill
+        thumbnailImage.roundCorners(corners: [.topLeft, .bottomLeft], radius: 20)
     }
 
     
