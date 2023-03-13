@@ -22,7 +22,6 @@ class CharacterDetailsVC: UIViewController {
     
     let seriesCollectionsContainer = UIView()
     let comicsCollectionsContainer = UIView()
-    let storiesCollectionsContainer = UIView()
     let eventsCollectionsContainer = UIView()
     
     var contentViewHeightConstraint: Constraint? = nil
@@ -49,6 +48,11 @@ class CharacterDetailsVC: UIViewController {
         configureScrollView()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = true
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.contentViewHeightConstraint?.update(offset: 1220 + self.descriptionLabel.frame.height)
@@ -71,6 +75,7 @@ class CharacterDetailsVC: UIViewController {
     private func configureScrollView() {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
+        scrollView.showsVerticalScrollIndicator = false
         
         scrollView.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -86,7 +91,7 @@ class CharacterDetailsVC: UIViewController {
     
     
     private func layoutUI() {
-        contentView.addSubviews(characterImageView, characterNameLabel, descriptionLabel, seriesCollectionsContainer, comicsCollectionsContainer, storiesCollectionsContainer, eventsCollectionsContainer)
+        contentView.addSubviews(characterImageView, characterNameLabel, descriptionLabel, seriesCollectionsContainer, comicsCollectionsContainer, eventsCollectionsContainer)
         contentView.sizeToFit()
         
         characterImageView.snp.makeConstraints { make in

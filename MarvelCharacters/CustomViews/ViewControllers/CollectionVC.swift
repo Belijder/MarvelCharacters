@@ -14,6 +14,7 @@ class CollectionVC: MCDataLoadingVC {
     var collectionView: UICollectionView!
     
     let emptyCollectionLabel = MCBodyLabel(textAlignment: .center, fontSize: 15)
+    let collectionType: CollectionType
     
     var items: [MCCollectionItem] = []
     var collectionURI: String
@@ -29,6 +30,7 @@ class CollectionVC: MCDataLoadingVC {
     // MARK: - Initialization
     init(collectionURI: String, collectionType: CollectionType) {
         self.collectionURI = collectionURI
+        self.collectionType = collectionType
         self.titleLabel.text = collectionType.rawValue
         super.init(nibName: nil, bundle: nil)
     }
@@ -118,6 +120,12 @@ extension CollectionVC: UICollectionViewDelegate, UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MCCollectionViewCell.identifier, for: indexPath) as! MCCollectionViewCell
         cell.set(from: items[indexPath.row])
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let destVC = MCCollectionItemDetailsVC(item: items[indexPath.row])
+        destVC.title = "\(collectionType.rawValue.dropLast()) Details"
+        navigationController?.pushViewController(destVC, animated: true)
     }
 }
 
