@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol CollectionViewDelegate: AnyObject {
+    func emptyCollection(collectionType: CollectionType)
+}
+
 class CollectionVC: MCDataLoadingVC {
     
    // MARK: - Properties
@@ -18,6 +22,10 @@ class CollectionVC: MCDataLoadingVC {
     
     var items: [MCCollectionItem] = []
     var collectionURI: String
+    
+    weak var delegate: CollectionViewDelegate?
+    
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -91,20 +99,22 @@ class CollectionVC: MCDataLoadingVC {
         secureURL.insert("s", at: secureURL.index(secureURL.startIndex, offsetBy: 4))
         
         NetworkingManager.shared.fetchItems(type: ApiResponse.self, baseURL: secureURL) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .success(let response):
                 if response.data.count > 0 {
-                    self?.items = response.data.results
-                    self?.collectionView.reloadData()
+                    self.items = response.data.results
+                    self.collectionView.reloadData()
                 } else {
                     print(response.data.count)
-                    self?.emptyCollectionLabel.alpha = 1.0
+                    self.emptyCollectionLabel.alpha = 1.0
                 }
             case .failure(let error):
-                print("🔴 Error to fetch collections from URI: \(String(describing: self?.collectionURI)). Error: \(error)")
+                print("🔴 Error to fetch collections from URI: \(String(describing: self.collectionURI)). Error: \(error)")
             }
             
-            self?.hideSpinningCircleView()
+            self.hideSpinningCircleView()
+            if self.items.isEmpty { self.delegate?.emptyCollection(collectionType: self.collectionType) }
         }
     }
 }

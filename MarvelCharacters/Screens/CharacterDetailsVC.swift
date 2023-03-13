@@ -24,6 +24,10 @@ class CharacterDetailsVC: UIViewController {
     let comicsCollectionsContainer = UIView()
     let eventsCollectionsContainer = UIView()
     
+    var seriesCollectionsIsEmpty = false
+    var comicsCollectionsIsEmpty = false
+    var eventsCollectionIsEmpty = false
+    
     var contentViewHeightConstraint: Constraint? = nil
     
     // MARK: - Initialization
@@ -44,8 +48,8 @@ class CharacterDetailsVC: UIViewController {
         view.setGradientBackground(colorTop: MCColors.marvelRed, colorBottom: MCColors.marvelDarkRed)
         configureUIElements()
         layoutUI()
-        setupCollections()
         configureScrollView()
+        setupCollections()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -55,7 +59,7 @@ class CharacterDetailsVC: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.contentViewHeightConstraint?.update(offset: 1220 + self.descriptionLabel.frame.height)
+        if !eventsCollectionIsEmpty { self.contentViewHeightConstraint?.update(offset: 1220 + self.descriptionLabel.frame.height) }
     }
     
     
@@ -92,8 +96,7 @@ class CharacterDetailsVC: UIViewController {
     
     private func layoutUI() {
         contentView.addSubviews(characterImageView, characterNameLabel, descriptionLabel, seriesCollectionsContainer, comicsCollectionsContainer, eventsCollectionsContainer)
-        contentView.sizeToFit()
-        
+
         characterImageView.snp.makeConstraints { make in
             make.left.right.equalToSuperview()
             make.top.equalToSuperview().offset(-45)
@@ -132,9 +135,16 @@ class CharacterDetailsVC: UIViewController {
     }
     
     private func setupCollections() {
-        add(childVC: CollectionVC(collectionURI: character.series.collectionURI, collectionType: .series), to: seriesCollectionsContainer)
-        add(childVC: CollectionVC(collectionURI: character.comics.collectionURI, collectionType: .comics), to: comicsCollectionsContainer)
-        add(childVC: CollectionVC(collectionURI: character.events.collectionURI, collectionType: .events), to: eventsCollectionsContainer)
+        let seriesCollectionVC = CollectionVC(collectionURI: character.series.collectionURI, collectionType: .series)
+        add(childVC: seriesCollectionVC, to: seriesCollectionsContainer)
+        
+        let comicsCollectionVC = CollectionVC(collectionURI: character.comics.collectionURI, collectionType: .comics)
+        add(childVC: comicsCollectionVC, to: comicsCollectionsContainer)
+        
+        let eventsCollectionVC = CollectionVC(collectionURI: character.events.collectionURI, collectionType: .events)
+        add(childVC: eventsCollectionVC, to: eventsCollectionsContainer)
+        
+        [seriesCollectionVC, comicsCollectionVC, eventsCollectionVC].forEach { $0.delegate = self }
     }
     
     //MARK: -  Logic
@@ -144,4 +154,34 @@ class CharacterDetailsVC: UIViewController {
         childVC.view.frame = containerView.bounds
         childVC.didMove(toParent: self)
     }
+    
+    private func checkCollections() {
+        if seriesCollectionsIsEmpty && comicsCollectionsIsEmpty && eventsCollectionIsEmpty {
+            [seriesCollectionsContainer, comicsCollectionsContainer, eventsCollectionsContainer].forEach { $0.removeFromSuperview() }
+            contentViewHeightConstraint?.update(offset: 420 + self.descriptionLabel.frame.height)
+        } else if comicsCollectionsIsEmpty && eventsCollectionIsEmpty {
+            [comicsCollectionsContainer, eventsCollectionsContainer].forEach { $0.removeFromSuperview() }
+            contentViewHeightConstraint?.update(offset: 420 + self.descriptionLabel.frame.height)
+        } else if eventsCollectionIsEmpty {
+            eventsCollectionsContainer.removeFromSuperview()
+            contentViewHeightConstraint?.update(offset: 940 + self.descriptionLabel.frame.height)
+        }
+    }
 }
+
+// MARK: - Extensions
+extension CharacterDetailsVC: CollectionViewDelegate {
+    func emptyCollection(collectionType: CollectionType) {
+        switch collectionType {
+        case .series:
+            seriesCollectionsIsEmpty = true
+        case .comics:
+            comicsCollectionsIsEmpty = true
+        case .events:
+            eventsCollectionIsEmpty = true
+        }
+        
+        checkCollections()
+    }
+}
+

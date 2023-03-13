@@ -103,10 +103,6 @@ class CharactersListVC: MCDataLoadingVC {
                 let characters = response.data.results
                 self.characters.append(contentsOf: characters)
                 self.updateData(on: self.characters)
-                
-                let comicsCollectionURI = characters[0].comics.collectionURI
-                print("🔵 comicsCollectionURI: \(comicsCollectionURI)")
-                
             case .failure(let error):
                 print("🔴 Error: \(error)")
             }
