@@ -24,6 +24,8 @@ enum MCColors {
 
 enum MCImages {
     static let imageNotFoundPlaceholder = UIImage(named: "imageNotFound")
+    static let imageNotFoundSquarePlaceholder = UIImage(named: "imageNotFoundSquare")
+//    static let launchImage = UIImage(named: "launchImage")
 }
 
 

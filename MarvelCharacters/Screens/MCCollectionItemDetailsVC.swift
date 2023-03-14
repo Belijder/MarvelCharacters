@@ -24,8 +24,9 @@ class MCCollectionItemDetailsVC: UIViewController {
     var contentViewHeightConstraint: Constraint? = nil
     
     // MARK: - Init
-    init(item: MCCollectionItem) {
+    init(item: MCCollectionItem, image: UIImage) {
         self.item = item
+        self.titleImage.image = image
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -73,7 +74,7 @@ class MCCollectionItemDetailsVC: UIViewController {
     }
     
     private func configureCreatorsTableView() {
-        creatorsTableView = UITableView()
+        creatorsTableView = UITableView(frame: .zero, style: .grouped)
         creatorsTableView.register(MCCreatorTableViewCell.self, forCellReuseIdentifier: MCCreatorTableViewCell.identifier)
         creatorsTableView.backgroundColor = .clear
         creatorsTableView.separatorStyle = .none
@@ -85,12 +86,11 @@ class MCCollectionItemDetailsVC: UIViewController {
     private func configureUIElements() {
         titleImage.contentMode = .scaleAspectFill
         titleImage.clipsToBounds = true
-        titleImage.setImage(baseURL: item.thumbnail.path, ext: item.thumbnail.extension)
         
         titleLabel.text = item.title
         
         descriptionLabel.numberOfLines = 0
-        descriptionLabel.text = item.description != "" ? item.description : "No description availabe."
+        descriptionLabel.text = item.description != nil ? item.description : "No description availabe."
         descriptionLabel.sizeToFit()
     }
     
@@ -153,12 +153,10 @@ extension MCCollectionItemDetailsVC: UITableViewDelegate, UITableViewDataSource 
         return headerLabel
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Creators"
-    }
+
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 20
+        return 30
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

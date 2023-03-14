@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>APIPublicKey</key>
-	<string>71051009341ae864f0c27111a30f5952</string>
 	<key>APIPrivateKey</key>
 	<string>063f844c45cb4954edd89bda9fe441992d08435e</string>
+	<key>APIPublicKey</key>
+	<string>71051009341ae864f0c27111a30f5952</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>marvel2.otf</string>
@@ -26,6 +26,11 @@
 				</dict>
 			</array>
 		</dict>
+	</dict>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIImageName</key>
+		<string>launchImage</string>
 	</dict>
 </dict>
 </plist>

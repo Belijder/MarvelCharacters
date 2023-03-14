@@ -165,7 +165,13 @@ extension CharactersListVC: UITableViewDelegate {
         let character = isSearching ? queryCharacters[indexPath.row] : characters[indexPath.row]
         
         let characterCell = charactersTableView.cellForRow(at: indexPath) as! MCCharacterCell
-        guard let image = characterCell.thumbnailImage.image else { return }
+        guard var image = characterCell.thumbnailImage.image else { return }
+        
+        if character.thumbnail.path == ImageNotAvailable.url {
+            if let placeholder = MCImages.imageNotFoundSquarePlaceholder {
+                image = placeholder
+            }
+        }
         
         let destVC = CharacterDetailsVC(character: character, characterImage: image)
         destVC.modalPresentationStyle = .fullScreen

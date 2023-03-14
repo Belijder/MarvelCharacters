@@ -133,7 +133,16 @@ extension CollectionVC: UICollectionViewDelegate, UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let destVC = MCCollectionItemDetailsVC(item: items[indexPath.row])
+        let itemCell = collectionView.cellForItem(at: indexPath) as? MCCollectionViewCell
+        guard var image = itemCell?.thumbnailImage.image else { return }
+        
+        if items[indexPath.row].thumbnail.path == ImageNotAvailable.url {
+            if let placeholder = MCImages.imageNotFoundSquarePlaceholder {
+                image = placeholder
+            }
+        }
+        
+        let destVC = MCCollectionItemDetailsVC(item: items[indexPath.row], image: image)
         destVC.title = "\(collectionType.rawValue.dropLast()) Details"
         navigationController?.pushViewController(destVC, animated: true)
     }
