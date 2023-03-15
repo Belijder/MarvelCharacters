@@ -10,12 +10,6 @@ import Alamofire
 import CryptoKit
 
 class NetworkingManager {
-    
-//    enum DataResposneType {
-//        static let characters = CharactersDataResponse.self
-//        static let comics = ComicDataResponse.self
-//    }
-    
     static let shared = NetworkingManager()
     
     private init() {
@@ -32,9 +26,14 @@ class NetworkingManager {
     
     func fetchItems<T: Decodable>(type: T.Type, baseURL: String, offset: Int = 0, completion: @escaping (Result<T, Error>) -> Void) {
         let hash = MD5(string: "\(ts)\(apiKeyPrivate)\(apiKeyPublic)")
-        let url = "\(baseURL)?limit=\(30)&offset=\(offset)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
         
-        AF.request(url).responseDecodable(of: T.self) { response in
+        let parameters = ["limit": String(30),
+                          "offset": String(offset),
+                          "ts": ts,
+                          "apikey": apiKeyPublic,
+                          "hash": hash]
+        
+        AF.request(baseURL, parameters: parameters).responseDecodable(of: T.self) { response in
             switch response.result {
             case .success(let results):
                 completion(.success(results))
@@ -47,9 +46,13 @@ class NetworkingManager {
 
     func fetchCharactersWith(query: String, completion: @escaping (Result<[MarvelCharacter], Error>) -> Void) {
         let hash = MD5(string: "\(ts)\(apiKeyPrivate)\(apiKeyPublic)")
-        let url = "\(charactersBaseURL)?nameStartsWith=\(query)&ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
         
-        AF.request(url).responseDecodable(of: CharactersDataResponse.self) { response in
+        let parameters = ["nameStartsWith": query,
+                          "ts": ts,
+                          "apikey": apiKeyPublic,
+                          "hash": hash]
+        
+        AF.request(charactersBaseURL, parameters: parameters).responseDecodable(of: CharactersDataResponse.self) { response in
             switch response.result {
             case .success(let results):
                 completion(.success(results.data.results))
@@ -71,11 +74,16 @@ class NetworkingManager {
         }
         
         let hash = MD5(string: "\(ts)\(apiKeyPrivate)\(apiKeyPublic)")
+        
         var secureURL = baseURL
         secureURL.insert("s", at: secureURL.index(secureURL.startIndex, offsetBy: 4))
-        let url = "\(secureURL).\(ext)?ts=\(ts)&apikey=\(apiKeyPublic)&hash=\(hash)"
+        secureURL.append(".\(ext)")
         
-        AF.request(url).responseData { response in
+        let parameters = ["ts": ts,
+                          "apikey": apiKeyPublic,
+                          "hash": hash]
+        
+        AF.request(secureURL, parameters: parameters).responseData { response in
             switch response.result {
             case .success(let imageData):
                 if let image = UIImage(data: imageData) {
